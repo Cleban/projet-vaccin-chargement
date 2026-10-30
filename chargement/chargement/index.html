@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Projet Vaccin - Chargement</title>
+<style>
+  :root { --vert: #6dff8a; --vert-dim: #3c8f50; --cuivre: #e0a040; --fond: #050a07; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: var(--fond); color: var(--vert);
+    font-family: "Courier New", Courier, monospace; }
+  /* Diaporama */
+  .diapo { position: fixed; inset: 0; background-size: cover; background-position: center;
+    opacity: 0; transition: opacity 2s ease; transform: scale(1.05); }
+  .diapo.visible { opacity: 1; animation: zoom 9s linear forwards; }
+  @keyframes zoom { from { transform: scale(1.05); } to { transform: scale(1.12); } }
+  .voile { position: fixed; inset: 0;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.75) 100%),
+                repeating-linear-gradient(0deg, rgba(0,0,0,0.22) 0 1px, transparent 1px 3px); }
+  /* Panneau */
+  .panneau { position: fixed; left: 50px; bottom: 50px; width: 520px; max-width: calc(100% - 100px);
+    background: rgba(5,12,8,0.82); border: 2px solid #4a3f33; border-radius: 14px; padding: 22px 26px;
+    box-shadow: 0 0 30px rgba(109,255,138,0.08) inset, 0 10px 40px rgba(0,0,0,0.6); }
+  .entete { display: flex; align-items: center; gap: 18px; }
+  .entete img { width: 96px; height: 96px; border-radius: 8px; border: 1px solid #4a3f33; object-fit: cover; }
+  .freq { color: var(--cuivre); font-size: 12px; letter-spacing: 3px; }
+  h1 { margin: 4px 0 2px; font-size: 34px; letter-spacing: 5px; text-shadow: 0 0 10px rgba(109,255,138,0.6); }
+  .sous { color: var(--vert-dim); font-size: 13px; }
+  .ligne { margin-top: 16px; font-size: 14px; min-height: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ligne::before { content: "> "; color: var(--vert-dim); }
+  .barre { margin-top: 10px; height: 14px; border: 1px solid var(--vert-dim); background: rgba(0,0,0,0.5); }
+  .barre div { height: 100%; width: 0%; background: var(--vert); box-shadow: 0 0 10px var(--vert); transition: width 0.4s; }
+  .infos { margin-top: 8px; display: flex; justify-content: space-between; font-size: 12px; color: var(--vert-dim); }
+  .astuce { margin-top: 14px; font-size: 13px; color: #b9c9bd; min-height: 36px; }
+  .credit { position: fixed; right: 16px; bottom: 10px; font-size: 11px; color: rgba(200,220,205,0.55); }
+  .curseur { display: inline-block; width: 9px; height: 15px; background: var(--vert); vertical-align: middle;
+    animation: clignote 1s steps(1) infinite; }
+  @keyframes clignote { 50% { opacity: 0; } }
+</style>
+</head>
+<body>
+<div id="diapos"></div>
+<div class="voile"></div>
+
+<div class="panneau">
+  <div class="entete">
+    <img src="logo.jpg" alt="Logo de Vrekhov">
+    <div>
+      <div class="freq">POSTE R-7 · RÉCEPTION EN COURS</div>
+      <h1 id="nom">PROJET VACCIN</h1>
+      <div class="sous" id="carte">Vrekhov · DarkRP</div>
+    </div>
+  </div>
+  <div class="ligne" id="statut">Connexion à la fréquence…</div>
+  <div class="barre"><div id="progres"></div></div>
+  <div class="infos"><span id="fichiers"></span><span>recherche du signal <span class="curseur"></span></span></div>
+  <div class="astuce" id="astuce"></div>
+</div>
+<div class="credit" id="credit"></div>
+
+<script>
+// ===== REGLAGES =====
+// Mettre ici les images (dans le dossier images/). Elles defilent dans cet ordre.
+var IMAGES = ["images/1.jpg", "images/2.jpg", "images/3.jpg", "images/4.jpg", "images/5.jpg"];
+var DUREE = 7000; // millisecondes par image
+var CREDIT = "";  // ex. "Carte : rp_pripyat_fixed - captures : ..." (laisser vide pour rien afficher)
+var ASTUCES = [
+  "F4 ouvre la radio : choisissez votre camp.",
+  "Contaminé ? Trouvez le Sujet Zéro avant qu'il ne soit trop tard.",
+  "Toutes les 25 minutes, l'alerte sonne. Puis c'est la guerre.",
+  "Les secteurs se capturent à pied, jamais en véhicule.",
+  "Les mercenaires se paient de la main à la main. Ils peuvent trahir.",
+  "!discord dans le chat pour rejoindre le Discord.",
+  "!3p pour passer en vue à la 3e personne."
+];
+// =====================
+
+document.getElementById("credit").textContent = CREDIT;
+
+// Diaporama (les images manquantes sont simplement ignorees)
+var conteneur = document.getElementById("diapos"), diapos = [], i = 0;
+IMAGES.forEach(function (src) {
+  var img = new Image();
+  img.onload = function () {
+    var d = document.createElement("div");
+    d.className = "diapo"; d.style.backgroundImage = "url('" + src + "')";
+    conteneur.appendChild(d); diapos.push(d);
+    if (diapos.length === 1) d.classList.add("visible");
+  };
+  img.src = src;
+});
+setInterval(function () {
+  if (diapos.length < 2) return;
+  diapos[i].classList.remove("visible");
+  i = (i + 1) % diapos.length;
+  void diapos[i].offsetWidth; diapos[i].classList.add("visible");
+}, DUREE);
+
+// Astuces
+var a = 0, zoneAstuce = document.getElementById("astuce");
+function astuce() { zoneAstuce.textContent = "Astuce : " + ASTUCES[a % ASTUCES.length]; a++; }
+astuce(); setInterval(astuce, 6000);
+
+// ===== Fonctions appelees par Garry's Mod pendant le chargement =====
+var total = 0, restants = 0;
+function maj() {
+  var p = total > 0 ? Math.round((total - restants) / total * 100) : 0;
+  document.getElementById("progres").style.width = Math.max(0, Math.min(100, p)) + "%";
+  document.getElementById("fichiers").textContent = total > 0 ? (total - restants) + " / " + total + " fichiers" : "";
+}
+function GameDetails(servername, serverurl, mapname, maxplayers, steamid, gamemode) {
+  if (servername) document.getElementById("nom").textContent = servername;
+  document.getElementById("carte").textContent = (mapname || "Vrekhov") + " · " + (maxplayers || "?") + " places";
+}
+function SetFilesTotal(t) { total = t; restants = t; maj(); }
+function SetFilesNeeded(n) { restants = n; maj(); }
+function DownloadingFile(f) { document.getElementById("statut").textContent = "Téléchargement : " + f; restants = Math.max(0, restants - 1); maj(); }
+function SetStatusChanged(s) {
+  var t = s;
+  if (/Workshop/i.test(s)) t = "Contenu Workshop : " + s.replace(/^.*Workshop/i, "").trim();
+  if (/Sending client info/i.test(s)) t = "Envoi de vos informations…";
+  if (/Client info sent/i.test(s)) t = "Informations envoyées.";
+  if (/Requesting|Retrieving/i.test(s)) t = "Réception des données du serveur…";
+  if (/Lua/i.test(s)) t = "Chargement des scripts…";
+  if (/Starting Lua/i.test(s)) { t = "Ouverture de la ville…"; document.getElementById("progres").style.width = "100%"; }
+  document.getElementById("statut").textContent = t;
+}
+</script>
+</body>
+</html>

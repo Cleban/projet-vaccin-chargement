@@ -1,0 +1,3 @@
+Mettez ici les images du diaporama, nommees 1.jpg, 2.jpg, 3.jpg, 4.jpg, 5.jpg
+(format paysage, 1920x1080 ideal, en JPG pour que ce soit leger).
+Pour en mettre plus ou moins : modifier la liste IMAGES en haut du script dans index.html.
